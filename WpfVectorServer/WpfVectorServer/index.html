@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1200px" height="675px">
+        <!-- ko foreach: items -->
+        <line data-bind="attr:{x1:X1() + 'px', y1:Y1() + 'px', x2:X2() + 'px', y2:Y2() + 'px'}" stroke="Black" stroke-width="10" stroke-linecap="round"/>
+        <!-- /ko -->
+    </svg>
+
+    <script src="Scripts/jquery-1.6.4.min.js" "></script>
+    <script src="/Scripts/jquery.signalR-2.1.2.js"></script>
+    <script src="/signalr/hubs"></script>
+    <script src="/Scripts/knockout-3.2.0.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            var hub = $.connection.myHub;
+            hub.client.loadInClient = function(vectorsJson) {
+                var lines = JSON.parse(vectorsJson);
+                kovm.items.removeAll();
+                lines.forEach(function(line) {
+                    kovm.items.push({
+                        X1: ko.observable(line.X1),
+                        X2: ko.observable(line.X2),
+                        Y1: ko.observable(line.Y1),
+                        Y2: ko.observable(line.Y2)
+                    });
+                });
+            };
+            $.connection.hub.start().done(function() {
+                hub.server.loadInServer();
+            });
+
+            var vm = function() {
+                var self = this;
+                self.items = ko.observableArray();
+            };
+
+            var kovm = new vm();
+            ko.applyBindings(kovm);
+        });
+    </script>
+</body>
+</html>
